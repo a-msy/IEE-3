@@ -5,7 +5,7 @@
 // Use:: $../kadai2/a.out ../kadai2/input/1.txt | ./a.out
 
 int main(int argc, char *argv[]){
-    char buf[SIZE];
+    char buf[SIZE] = {};
 
     //file read
     int fr = read(0, buf, SIZE);

@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <fcntl.h>
-#define SIZE 100
+#define SIZE 255
 // Use:: $./a.out ./input/1.txt
 
 int main(int argc, char *argv[]){
-    char buf[SIZE];
+    char buf[SIZE] = {};
 
     //file open
     int fd = open(argv[1], O_RDONLY);
@@ -21,7 +21,7 @@ int main(int argc, char *argv[]){
     }
 
     //print
-    printf("%s\n",buf);
+    write(1, buf, SIZE);
 
     //file close
     close(fd);
