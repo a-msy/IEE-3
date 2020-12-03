@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <fcntl.h>
-#define SIZE 255
+#define SIZE 100
 // Use:: $./a.out ./input/1.txt
 
 int main(int argc, char *argv[]){
@@ -17,6 +17,7 @@ int main(int argc, char *argv[]){
     int fr = read(fd, buf, SIZE);
     if(fr == -1){
         printf("E_F_READ\n");
+        return -1;
     }
 
     //print
