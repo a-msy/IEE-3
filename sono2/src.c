@@ -44,7 +44,7 @@ int main(void){
     }
 
     // receive message
-    char r_buf[4096];
+    char r_buf[4000];
     int rec = recv(soc, r_buf, sizeof(r_buf), 0);
     if(rec == -1){
         printf("Failed to receive\n");
