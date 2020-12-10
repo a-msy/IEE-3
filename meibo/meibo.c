@@ -5,97 +5,9 @@
  Created on 2019/04/10
  update on 2019/07/26
 */
-#include<stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#define LIMIT 1024
-#define maxsplit 5 //最大分割数
-#define luck -1
-#define over -2
-#define endp NULL //strtol 用ポインタ
-#define base1 10  //10進数
-    typedef enum {
-        null,
-        LUCK,
-        OVER,
-        NOTDEFINED,
-        NORECORD,
-        OVERNUMBERRECORD,
-        FORMATINPUT,
-        FORMATID,
-        FORMATDATE,
-        NUMITEM,
-        ERRORNUM,
-        NOFILEOPEN,
-        OVERNITEMS,
-        PARAMERROR,
-    } ERROR;
-typedef enum
-{
-    Q,
-    C,
-    P,
-    E,
-    R,
-    W,
-    BR,
-    BW,
-    F,
-    FB,
-    S,
-    QS,
-    D,
-    SIZE,
-    LIST
-} HELP;
-struct date
-{
-    int y; //year
-    int m; //month
-    int d; //day
-};
-struct profile
-{
-    int id;        //id
-    char name[70]; //schoolname
-    struct date found;
-    char add[70]; //address
-    char *others; //備考
-};
-/*subst*/
-int subst(char *str, char c1, char c2);
-/*split*/
-int split(char *str, char *ret[], char sep, int max);
-void error_split(int check);
-/*get_line*/
-int get_line(char *input);
-int get_line_fp(FILE *fp, char *input);
-/*parse_line*/
-void parse_line(char *line);
-void printdata(struct profile *pro, int i);
-/*cmd*/
-void exec_command(char *cmd, char *param);
-void cmd_quit();
-void cmd_check();
-void cmd_print(struct profile *pro, int param);
-void cmd_pex(int param);
-void cmd_read(char *filename);
-void cmd_write(char *filename);
-void cmd_binread(char *filename);
-void cmd_binwrite(char *filename);
-void cmd_find(char *keyword);
-void cmd_findb(char *keyword);
-void swap_struct(struct profile *i, struct profile *j);
-int compare_profile(struct profile *p1, struct profile *p2, int column);
-int compare_date(struct date *d1, struct date *d2);
-void cmd_sort(int youso);
-void cmd_qsort(int youso);
-int partition(int left, int right, int youso);
-void quick_sort(int left, int right, int youso);
-void cmd_delete(int param);
-void cmd_help();
-void cmd_size();
-int find_kai(char *s, char *cp);
+
+#include "meibo.h"
+
 /*profile*/
 struct profile *new_profile(struct profile *pro, char *str);
 char *date_to_string(char buf[], struct date *date);
@@ -103,16 +15,6 @@ char *date_to_string(char buf[], struct date *date);
 struct profile profile_data_store[10000];
 int profile_data_nitems = 0;
 int quick_count = 0;
-/*MAIN*/
-int main(void)
-{
-    char line[LIMIT + 1];
-    while (get_line(line))
-    {
-        parse_line(line);
-    }
-    return 0;
-}
 
 int subst(char *str, char c1, char c2)
 {
@@ -172,8 +74,6 @@ int get_line(char *input)
 
 int get_line_fp(FILE *fp, char *input)
 {
-    fprintf(stderr, "\n>>>>>");
-
     if (fgets(input, LIMIT + 1, fp) == NULL)
     {
         fprintf(stderr, "ERROR %d:NULL--getline()\n", null);
@@ -207,9 +107,9 @@ void parse_line(char *line)
     char *ret[2];
     int com = 0;
 
-    if (line[0] =='%')
+    if (line[0] == '%')
     {
-        com = split(line, ret,' ', 2);
+        com = split(line, ret, ' ', 2);
         exec_command(ret[0], ret[1]);
     }
     else
@@ -272,82 +172,52 @@ void exec_command(char *cmd, char *param)
     {
         cmd_binwrite(param);
     }
-    else if (strcmp(cmd, "%BR") == 0 || strcmp(cmd, "br") == 0)
+    else if (strcmp(cmd, "%BR") == 0 || strcmp(cmd, "%br") == 0)
     {
         cmd_binread(param);
     }
-    else if (strcmp(cmd, "%SIZE") == 0 || strcmp(cmd, "size") == 0)
+    else if (strcmp(cmd, "%SIZE") == 0 || strcmp(cmd, "%size") == 0)
     {
         cmd_size();
     }
     else
     {
-        fprintf(stderr, "ERROR %d:%s command is not defined.--exec_command()\n", NOTDEFINED, cmd);
-        fprintf(stderr, "command list : %%H\n");
+        sprintf(send_buffer, "ERROR %d:%s command is not defined.--exec_command()\n", NOTDEFINED, cmd);
     }
 }
 
 void cmd_help()
 {
-    int i;
-    char help_list[LIST][40] =
-        {
-            "Q : quit system",
-            "C : check data num",
-            "P [value] : print data",
-            "E : print specified data",
-            "R [filename] : read csv data",
-            "W [filename] : write csv data",
-            "BR : read binary data",
-            "BW : write binary data",
-            "F [word] : Exact match search",
-            "FB [word] : Partial match search",
-            "S [value] : sort (bubble)",
-            "QS [value] : quick sort",
-            "D [value] : delete data",
-            "SIZE : size check",
-        };
-
-    for (i = 0; i < LIST; i++)
-    {
-        fprintf(stderr, "%s\n", help_list[i]);
-    }
-
+    char help_list[] = "Q : quit system\nC : check data num\nP [value] : print data\nE : print specified data\nR [filename] : read csv data\nW [filename] : write csv data\nBR : read binary data\nBW : write binary data\nF [word] : Exact match search\nFB [word] : Partial match search\nS [value] : sort (bubble)\nQS [value] : quick sort\nD [value] : delete data\nSIZE : size check\n";
+    strcat(send_buffer, help_list);
     return;
 }
 
 void cmd_quit()
 {
-    fprintf(stderr, "Are you sure you want to quit?(y or n)>>>");
-    if (fgetc(stdin) =='y')
-    {
-        fprintf(stderr, "END SYSTEM.\n");
-        exit(0);
-    }
-    else
-    {
-        return;
-    }
+    send_buffer[0] = "Q";
+    return;
 }
 
 void cmd_check()
 {
-    fprintf(stdout, "%d profile(s)\n", profile_data_nitems);
+    sprintf(send_buffer, "%d profile(s)\n", profile_data_nitems);
     return;
 }
 
 void cmd_print(struct profile *pro, int param)
 {
+    int i;
+    char tmp[MAXLEN] = "\0";
+
     if (profile_data_nitems == 0)
     {
-        fprintf(stderr, "ERROR %d:No record. No print.--cmd_print()\n", NORECORD);
+        sprintf(send_buffer, "ERROR %d:No record. No print.--cmd_print()\n", NORECORD);
         return;
     }
-    int i;
 
     if (param == 0)
     { //０のとき
-        fprintf(stderr, "******print record data******\n");
         for (i = 0; i < profile_data_nitems; i++)
         {
             printdata(pro + i, i);
@@ -359,11 +229,10 @@ void cmd_print(struct profile *pro, int param)
 
         if (param > profile_data_nitems)
         {
-            fprintf(stderr, "ERROR %d:over number of record.--cmd_print()\n", OVERNUMBERRECORD);
-            fprintf(stderr, "ERROR %d:number of item is %d\n", NUMITEM, profile_data_nitems);
+            sprintf(send_buffer, "ERROR %d:over number of record.--cmd_print()\nERROR %d:number of item is %d\n", OVERNUMBERRECORD, NUMITEM, profile_data_nitems);
             return;
         }
-        fprintf(stderr, "******print record data******\n");
+
         for (i = 0; i < param; i++)
         {
             printdata(pro + i, i);
@@ -376,12 +245,12 @@ void cmd_print(struct profile *pro, int param)
         param *= -1;
         if (param > profile_data_nitems)
         {
-            fprintf(stderr, "ERROR %d:over number of record.--cmd_print()\n", OVERNUMBERRECORD);
-            fprintf(stderr, "ERROR %d:number of item is %d\n", NUMITEM, profile_data_nitems);
+            sprintf(send_buffer, "ERROR %d:over number of record.--cmd_print()\nERROR %d:number of item is %d\n", OVERNUMBERRECORD, NUMITEM, profile_data_nitems);
             return;
         }
+
         pro += profile_data_nitems - param;
-        fprintf(stderr, "******print record data******\n");
+
         for (i = 0; i < param; i++)
         {
             printdata(pro + i, profile_data_nitems - param + i);
@@ -392,20 +261,17 @@ void cmd_print(struct profile *pro, int param)
 
 void printdata(struct profile *pro, int i)
 {
-    fprintf(stderr, "data : %5d ------------------------------\n", i + 1);
-    fprintf(stdout, "Id : %d\n", pro->id);
-    fprintf(stdout, "Name : %s\n", pro->name);
-    fprintf(stdout, "Birth : %04d-%02d-%02d\n", pro->found.y, pro->found.m, pro->found.d);
-    fprintf(stdout, "Addr : %s\n", pro->add);
-    fprintf(stdout, "Com. : %s\n\n", pro->others);
-    fprintf(stderr, "--------------------------------------------\n");
+    char buf[MAXLEN] = {};
+    sprintf(buf, "data : %5d ------------------------------\nId : %d\nName : %s\nBirth : %04d-%02d-%02d\nAddr : %s\nCom. : %s\n--------------------------------------------\n", i + 1, pro->id, pro->name, pro->found.y, pro->found.m, pro->found.d, pro->add, pro->others);
+    strcat(send_buffer, buf);
+    return;
 }
 
 void cmd_pex(int param)
 {
     if (profile_data_nitems == 0 || param == 0)
     {
-        fprintf(stderr, "ERROR %d:No record. No print.--cmd_print()\n", NORECORD);
+        sprintf(send_buffer, "ERROR %d:No record. No print.--cmd_print()\n", NORECORD);
         return;
     }
 
@@ -416,8 +282,7 @@ void cmd_pex(int param)
 
     if (param > profile_data_nitems)
     {
-        fprintf(stderr, "ERROR %d:over number of record.--cmd_print()\n", OVERNUMBERRECORD);
-        fprintf(stderr, "ERROR %d:number of item is %d\n", NUMITEM, profile_data_nitems);
+        sprintf(send_buffer, "ERROR %d:over number of record.--cmd_print()\nERROR %d:number of item is %d\n", OVERNUMBERRECORD, NUMITEM, profile_data_nitems);
         return;
     }
     param -= 1;
@@ -432,7 +297,7 @@ void cmd_read(char *filename)
 
     if ((fp = fopen(filename, "r")) == NULL)
     {
-        fprintf(stderr, "ERROR %d:openfile error!!!---cmd_read()\n", NOFILEOPEN);
+        sprintf(send_buffer, "ERROR %d:openfile error!!!---cmd_read()\n", NOFILEOPEN);
         return;
     }
     while (get_line_fp(fp, line))
@@ -440,6 +305,7 @@ void cmd_read(char *filename)
         parse_line(line);
     }
     fclose(fp);
+    sprintf(send_buffer, "read %s\n", filename);
     return;
 }
 
@@ -449,7 +315,7 @@ void cmd_write(char *filename)
     int i;
     if ((fp = fopen(filename, "w")) == NULL)
     {
-        fprintf(stderr, "ERROR %d:openfile error!!!---cmd_write()\n", NOFILEOPEN);
+        sprintf(send_buffer, "ERROR %d:openfile error!!!---cmd_write()\n", NOFILEOPEN);
         return;
     }
     for (i = 0; i < profile_data_nitems; i++)
@@ -462,7 +328,7 @@ void cmd_write(char *filename)
         fprintf(fp, "\n");
     }
     fclose(fp);
-    fprintf(stderr, "wrote %s\n", filename);
+    sprintf(send_buffer, "wrote %s\n", filename);
     return;
 }
 
@@ -742,21 +608,21 @@ struct profile *new_profile(struct profile *pro, char *str)
     int count = 0;
     if (profile_data_nitems >= 10000)
     {
-        fprintf(stderr, "ERROR %d:Can't add record--new_profile()\n", OVERNITEMS);
+        sprintf(send_buffer, "ERROR %d:Can't add record--new_profile()\n", OVERNITEMS);
         return NULL;
     }
-    count = split(str, ret1,',', maxsplit);
+    count = split(str, ret1, ',', maxsplit);
     if (count != maxsplit)
     {
         error_split(count);
-        fprintf(stderr, "ERROR %d:wrong format of input(ex.001,name,1999-01-01,address,other)--new_profile()\n", FORMATINPUT);
+        sprintf(send_buffer, "ERROR %d:wrong format of input(ex.001,name,1999-01-01,address,other)--new_profile()\n", FORMATINPUT);
         return NULL;
     } //文字列用
 
     pro->id = strtol(ret1[0], endp, base1);
     if (pro->id == 0)
     {
-        fprintf(stderr, "ERROR %d:ID is NUMBER.--new_profile()\n", FORMATID);
+        sprintf(send_buffer, "ERROR %d:ID is NUMBER.--new_profile()\n", FORMATID);
         return NULL;
     }
 
@@ -767,14 +633,14 @@ struct profile *new_profile(struct profile *pro, char *str)
 
     if (split(ret1[2], ret2, '-', maxsplit - 2) != maxsplit - 2)
     {
-        fprintf(stderr, "ERROR %d:wrong format of date.(ex.1999-01-01)--new_profile()\n", FORMATDATE);
+        sprintf(send_buffer, "ERROR %d:wrong format of date.(ex.1999-01-01)--new_profile()\n", FORMATDATE);
         return NULL;
     } //設立日
     pro->found.y = strtol(ret2[0], endp, base1);
     pro->found.m = strtol(ret2[1], endp, base1);
     pro->found.d = strtol(ret2[2], endp, base1);
 
-    fprintf(stderr, "Add profile.\n");
+    sprintf(send_buffer, "Add profile.\n");
     profile_data_nitems++;
     return pro;
 }
