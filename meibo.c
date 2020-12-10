@@ -5,7 +5,7 @@
  Created on 2019/04/10
  update on 2019/07/26
 */
-include<stdio.h>
+#include<stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #define LIMIT 1024
@@ -117,7 +117,7 @@ int main(void)
 int subst(char *str, char c1, char c2)
 {
     int count = 0;
-    while (*str != ’\0’)
+    while (*str != '\0')
     {
         if (*str == c1)
         {
@@ -135,7 +135,7 @@ int split(char *str, char *ret[], char sep, int max)
 
     while (1)
     {
-        if (*str == ’\0’)
+        if (*str == '\0')
         {
             break; //からもじなら抜ける
         }
@@ -144,17 +144,17 @@ int split(char *str, char *ret[], char sep, int max)
             break;
         ret[count++] = str; //str をいじれば ret も変わるように分割後の文字列にはポインタを入れる
 
-        while ((*str != ’\0’) && (*str != sep))
+        while ((*str != '\0') && (*str != sep))
         { //区切り文字が見つかるまでポインタすすめる
             str++;
         }
 
-        if (*str == ’\0’)
+        if (*str == '\0')
         {
             break; //区切り文字がなかったら抜ける＝文字列はそのまま
         }
 
-        *str = ’\0’; //必ず区切り文字のはずだからくぎる
+        *str = '\0'; //必ず区切り文字のはずだからくぎる
         str++;       //インクリメントさせる
     }
 
@@ -179,7 +179,7 @@ int get_line_fp(FILE *fp, char *input)
         fprintf(stderr, "ERROR %d:NULL--getline()\n", null);
         return 0; /* 失敗EOF */
     }
-    subst(input, ’\n’, ’\0’);
+    subst(input, '\n', '\0');
 
     return 1; /*成功*/
 }
@@ -207,9 +207,9 @@ void parse_line(char *line)
     char *ret[2];
     int com = 0;
 
-    if (line[0] ==’%’)
+    if (line[0] =='%')
     {
-        com = split(line, ret,’ ’, 2);
+        com = split(line, ret,' ', 2);
         exec_command(ret[0], ret[1]);
     }
     else
@@ -319,7 +319,7 @@ void cmd_help()
 void cmd_quit()
 {
     fprintf(stderr, "Are you sure you want to quit?(y or n)>>>");
-    if (fgetc(stdin) ==’y’)
+    if (fgetc(stdin) =='y')
     {
         fprintf(stderr, "END SYSTEM.\n");
         exit(0);
@@ -553,25 +553,25 @@ void cmd_findb(char *keyword)
 int find_kai(char *s, char *cp)
 {
     char *s1, *s2;
-    if (*cp == ’\0’)
+    if (*cp == '\0')
         return 1; /*cp の文字列長が 0 なら s を返す*/
 
-    while (*s != ’\0’)
+    while (*s != '\0')
     {
-        while (*s != ’\0’ && *s != *cp)
+        while (*s != '\0' && *s != *cp)
         { /*先頭文字が合うまで探す*/
             s++;
         }
-        if (*s == ’\0’)
+        if (*s == '\0')
             return 1; /*見つからない*/
         s1 = s;
         s2 = cp;
-        while (*s1 == *s2 && *s1 != ’\0’)
+        while (*s1 == *s2 && *s1 != '\0')
         { /*cp の先頭以降の文字列が一致するか*/
             s1++;
             s2++;
         }
-        if (*s2 == ’\0’)
+        if (*s2 == '\0')
         { /* cp の文字列は，全て一致した*/
 
             return 0;
@@ -742,10 +742,10 @@ struct profile *new_profile(struct profile *pro, char *str)
     int count = 0;
     if (profile_data_nitems >= 10000)
     {
-        fprintf(stderr, "ERROR %d:Can’t add record--new_profile()\n", OVERNITEMS);
+        fprintf(stderr, "ERROR %d:Can't add record--new_profile()\n", OVERNITEMS);
         return NULL;
     }
-    count = split(str, ret1,’,’, maxsplit);
+    count = split(str, ret1,',', maxsplit);
     if (count != maxsplit)
     {
         error_split(count);
@@ -765,7 +765,7 @@ struct profile *new_profile(struct profile *pro, char *str)
     pro->others = (char *)malloc(sizeof(char) * (strlen(ret1[4]) + 1));
     strcpy(pro->others, ret1[4]); //備考,MAX 1024bytes
 
-    if (split(ret1[2], ret2,’-’, maxsplit - 2) != maxsplit - 2)
+    if (split(ret1[2], ret2, '-', maxsplit - 2) != maxsplit - 2)
     {
         fprintf(stderr, "ERROR %d:wrong format of date.(ex.1999-01-01)--new_profile()\n", FORMATDATE);
         return NULL;
