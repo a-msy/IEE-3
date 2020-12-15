@@ -48,7 +48,10 @@ int main(void)
         }
         else
         {
-            rc = recv(new_sockfd, receive_buffer, sizeof(receive_buffer), 0);
+            char tmp[MAXLEN] = "\0";
+            strcpy(tmp, receive_buffer);
+
+            rc = recv(new_sockfd, tmp, sizeof(tmp), 0);
             if (rc == -1)
             {
                 printf("rc = %d, errno=%d: %s\n", rc, errno, strerror(errno));
@@ -56,10 +59,9 @@ int main(void)
             }
             else
             {
-                printf("\n\n:::receive:::\n%s\n\n", receive_buffer);
-                parse_line(receive_buffer);
+                printf("\n\n:::receive:::\n%s\n\n", tmp);
+                parse_line(tmp);
             }
-            receive_buffer[0] = '\0';
         }
     }
     close(sockfd);

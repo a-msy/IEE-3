@@ -67,6 +67,8 @@ struct profile
 };
 
 void request(char *s_buf);
+void request_p(char *s_buf, int count);
+void request_r(char *filename);
 
 /*subst*/
 int subst(char *str, char c1, char c2);
@@ -76,6 +78,7 @@ void error_split(int check);
 /*get_line*/
 int get_line(char *input);
 int get_line_fp(FILE *fp, char *input);
+int get_line_no_subst(FILE *fp, char *input);
 
 void parse_line(char *line);
 void exec_command(char *cmd, char *param);

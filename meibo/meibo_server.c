@@ -122,25 +122,13 @@ void parse_line(char *line)
 
 void exec_command(char *cmd, char *param)
 {
-    if (strcmp(cmd, "%Q") == 0 || strcmp(cmd, "%q") == 0)
-    {
-        cmd_quit();
-    }
-    else if (strcmp(cmd, "%C") == 0 || strcmp(cmd, "%c") == 0)
+    if (strcmp(cmd, "%C") == 0 || strcmp(cmd, "%c") == 0)
     {
         cmd_check();
-    }
-    else if (strcmp(cmd, "%E") == 0 || strcmp(cmd, "%e") == 0)
-    {
-        cmd_pex(strtol(param, endp, base1));
     }
     else if (strcmp(cmd, "%P") == 0 || strcmp(cmd, "%p") == 0)
     {
         cmd_print(&profile_data_store[0], atoi(param));
-    }
-    else if (strcmp(cmd, "%R") == 0 || strcmp(cmd, "%r") == 0)
-    {
-        cmd_read(param);
     }
     else if (strcmp(cmd, "%W") == 0 || strcmp(cmd, "%w") == 0)
     {
@@ -164,12 +152,6 @@ void cmd_help()
     return;
 }
 
-void cmd_quit()
-{
-    sprintf(send_buffer, "client Quit");
-    return;
-}
-
 void cmd_check()
 {
     sprintf(send_buffer, "%d profile(s)\n", profile_data_nitems);
@@ -180,7 +162,6 @@ void cmd_check()
 void cmd_print(struct profile *pro, int param)
 {
     int i;
-    char tmp[MAXLEN] = "\0";
 
     if (profile_data_nitems == 0)
     {
@@ -246,59 +227,6 @@ void printdata(struct profile *pro, int i)
     return;
 }
 
-void cmd_pex(int param)
-{
-    if (profile_data_nitems == 0 || param == 0)
-    {
-        sprintf(send_buffer, "ERROR %d:No record. No print.--cmd_print()\n", NORECORD);
-        send_to_client(send_buffer);
-        return;
-    }
-
-    if (param < 0)
-    {
-        param *= (-1);
-    }
-
-    if (param > profile_data_nitems)
-    {
-        sprintf(send_buffer, "ERROR %d:over number of record.--cmd_print()\nERROR %d:number of item is %d\n", OVERNUMBERRECORD, NUMITEM, profile_data_nitems);
-        send_to_client(send_buffer);
-        return;
-    }
-    param -= 1;
-    printdata(&profile_data_store[param], param);
-    return;
-}
-
-void cmd_read(char *filename)
-{
-    char line[LIMIT + 1];
-    FILE *fp;
-
-    if ((fp = fopen(filename, "r")) == NULL)
-    {
-        sprintf(send_buffer, "ERROR %d:openfile error!!!---cmd_read()\n", NOFILEOPEN);
-        send_to_client(send_buffer);
-        return;
-    }
-    while (get_line_fp(fp, line))
-    {
-        parse_line(line);
-    }
-    fclose(fp);
-    sprintf(send_buffer, "read %s\n", filename);
-    send_to_client(send_buffer);
-    return;
-}
-
-void cmd_read_server(char *filename)
-{
-    sprintf(send_buffer, "%R %s\n", filename);
-    send_to_client(send_buffer);
-    return;
-}
-
 void cmd_write(char *filename)
 {
     FILE *fp;
@@ -319,102 +247,6 @@ void cmd_write(char *filename)
     }
     fclose(fp);
     sprintf(send_buffer, "wrote %s\n", filename);
-    return;
-}
-
-char *date_to_string(char buf[], struct date *date)
-{
-    sprintf(buf, "%04d-%02d-%02d", date->y, date->m, date->d);
-    return buf;
-}
-
-void swap_struct(struct profile *i, struct profile *j)
-{
-    struct profile temp;
-
-    temp = *j;
-    *j = *i;
-    *i = temp;
-
-    return;
-}
-
-int compare_profile(struct profile *p1, struct profile *p2, int youso)
-{
-    if (youso < 0)
-        youso *= -1;
-    switch (youso)
-    {
-    case 1:
-        return (p1->id) - (p2->id);
-        break;
-
-    case 2:
-        return strcmp(p1->name, p2->name);
-        break;
-
-    case 3:
-        return compare_date(&p1->found, &p2->found);
-        break;
-
-    case 4:
-        return strcmp(p1->add, p2->add);
-        break;
-
-    case 5:
-        return strcmp(p1->others, p2->others);
-        break;
-
-    default:
-        return 0;
-        break;
-    }
-}
-
-int compare_date(struct date *d1, struct date *d2)
-{
-    if (d1->y != d2->y)
-        return d1->y - d2->y;
-    if (d1->m != d2->m)
-        return d1->m - d2->m;
-    return (d1->d) - (d2->d);
-}
-
-
-void quick_sort(int left, int right, int youso)
-{
-    int i, j, pivot;
-
-    i = left;
-    j = right;
-    pivot = right;
-
-    while (1)
-    {
-        while (compare_profile(&profile_data_store[i], &profile_data_store[pivot], youso) < 0)
-        {
-            i++;
-        }
-        while (compare_profile(&profile_data_store[pivot], &profile_data_store[j], youso) < 0)
-        {
-            j++;
-        }
-        if (i >= j)
-            break;
-        swap_struct(&profile_data_store[i], &profile_data_store[j]);
-        quick_count++;
-        i++;
-        j--;
-    }
-
-    if (left < i - 1)
-    {                                   /* 基準値の左に 2 以上要素があれば */
-        quick_sort(left, i - 1, youso); /* 左の配列をソートする */
-    }
-    if (j + 1 < right)
-    {                                    /* 基準値の右に 2 以上要素があれば */
-        quick_sort(j + 1, right, youso); /* 右の配列をソートする */
-    }
     return;
 }
 
@@ -463,7 +295,10 @@ struct profile *new_profile(struct profile *pro, char *str)
 
 void send_to_client(char *send_buffer){
     //send
-    sn2 = send(new_sockfd, send_buffer, strlen(send_buffer), 0);
+    char tmp[MAXLEN] = "\0";
+    strcpy(tmp, send_buffer);
+    
+    sn2 = send(new_sockfd, tmp, sizeof(tmp), 0);
     printf("\n\n:::send:::\n%s\n\n", send_buffer);
     if (sn2 == -1)
     {

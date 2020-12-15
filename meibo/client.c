@@ -6,8 +6,10 @@ int main(void)
 
     while (get_line(s_buf))
     {
-        parse_line(s_buf);
-        s_buf[0] = '\0';
+        char tmp[MAXLEN] = "\0";
+        strcpy(tmp, s_buf);
+
+        parse_line(tmp);
     }
     return 0;
 }
