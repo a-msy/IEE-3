@@ -290,7 +290,8 @@ void exec_command(char *cmd, char *param)
 {
     if (strcmp(cmd, "%Q") == 0 || strcmp(cmd, "%q") == 0)
     {
-        exit(0);
+        printf("Bye.\n");
+        exit(1);
     }
     else if (strcmp(cmd, "%C") == 0 || strcmp(cmd, "%c") == 0)
     {
