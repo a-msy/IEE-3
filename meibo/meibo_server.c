@@ -277,7 +277,7 @@ struct profile *new_profile(struct profile *pro, char *str)
     pro->found.m = strtol(ret2[1], endp, base1);
     pro->found.d = strtol(ret2[2], endp, base1);
 
-    sprintf(send_buffer, "Add profile.\n");
+    send_to_client("Add profile.\n");
     profile_data_nitems++;
     return pro;
 }
@@ -288,7 +288,7 @@ void send_to_client(char *send_buffer){
     strcpy(tmp, send_buffer);
     
     sn2 = send(new_sockfd, tmp, sizeof(tmp), 0);
-    //printf("\n\n:::send:::\n%s\n\n", send_buffer);
+    printf("\n\n:::send:::\n%s\n\n", send_buffer);
     if (sn2 == -1)
     {
         printf("sn2 = %d, errno=%d: %s\n", sn2, errno, strerror(errno));

@@ -33,38 +33,6 @@ typedef enum
     OVERNITEMS,
     PARAMERROR,
 } ERROR;
-typedef enum
-{
-    Q,
-    C,
-    P,
-    E,
-    R,
-    W,
-    BR,
-    BW,
-    F,
-    FB,
-    S,
-    QS,
-    D,
-    SIZE,
-    LIST
-} HELP;
-struct date
-{
-    int y; //year
-    int m; //month
-    int d; //day
-};
-struct profile
-{
-    int id;        //id
-    char name[70]; //schoolname
-    struct date found;
-    char add[70]; //address
-    char *others; //備考
-};
 
 void request(char *s_buf);
 void request_p(char *s_buf, int count);
@@ -79,7 +47,6 @@ void error_split(int check);
 /*get_line*/
 int get_line(char *input);
 int get_line_fp(FILE *fp, char *input);
-int get_line_no_subst(FILE *fp, char *input);
 
 void parse_line(char *line);
 void exec_command(char *cmd, char *param);

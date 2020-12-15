@@ -60,20 +60,10 @@ int get_line_fp(FILE *fp, char *input)
 {
     if (fgets(input, LIMIT + 1, fp) == NULL)
     {
-        fprintf(stderr, "ERROR %d:NULL--getline()\n", null);
+        fprintf(stderr, "NULL--getline()\n", null);
         return 0; /* 失敗EOF */
     }
     subst(input, '\n', '\0');
-
-    return 1; /*成功*/
-}
-int get_line_no_subst(FILE *fp, char *input)
-{
-    if (fgets(input, LIMIT + 1, fp) == NULL)
-    {
-        fprintf(stderr, "ERROR %d:NULL--getline()\n", null);
-        return 0; /* 失敗EOF */
-    }
     return 1; /*成功*/
 }
 
@@ -134,7 +124,7 @@ void request(char *s_buf)
     char tmp[MAXLEN] = "\0";
     strcpy(tmp, s_buf);
 
-    int sd = send(soc, tmp, strlen(tmp), 0);
+    int sd = send(soc, tmp, sizeof(tmp), 0);
     if (sd == -1)
     {
         printf("sd = %d, errno=%d: %s", sd, errno, strerror(errno));
@@ -362,6 +352,8 @@ void parse_line(char *line)
     {
         com = split(line, ret, ' ', 2);
         exec_command(ret[0], ret[1]);
+    }else{
+        request(line);
     }
 }
 
@@ -395,6 +387,6 @@ void exec_command(char *cmd, char *param)
     }
     else
     {
-        request(cmd);
+        printf("ERROR %d:%s command is not defined.--exec_command()\n", NOTDEFINED, cmd);
     }
 }
