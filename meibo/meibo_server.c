@@ -130,13 +130,13 @@ void exec_command(char *cmd, char *param)
     {
         cmd_print(&profile_data_store[0], atoi(param));
     }
-    else if (strcmp(cmd, "%W") == 0 || strcmp(cmd, "%w") == 0)
-    {
-        cmd_write(param);
-    }
     else if (strcmp(cmd, "%H") == 0 || strcmp(cmd, "%h") == 0)
     {
         cmd_help();
+    }
+    else if (strcmp(cmd, "%W") == 0 || strcmp(cmd, "%w") == 0)
+    {
+        cmd_write();
     }
     else
     {
@@ -147,7 +147,7 @@ void exec_command(char *cmd, char *param)
 
 void cmd_help()
 {
-    char help_list[] = "Q : quit system\nC : check data num\nP [value] : print data\nE : print specified data\nR [filename] : read csv data\nW [filename] : write csv data\nBR : read binary data\nBW : write binary data\nF [word] : Exact match search\nFB [word] : Partial match search\nS [value] : sort (bubble)\nQS [value] : quick sort\nD [value] : delete data\nSIZE : size check\n";
+    char help_list[] = "Q : quit client\nC : check data num\nP [value] : print data\nR [filename] : read csv data from client\nW [filename] : write csv data to client\n";
     send_to_client(help_list);
     return;
 }
@@ -227,26 +227,15 @@ void printdata(struct profile *pro, int i)
     return;
 }
 
-void cmd_write(char *filename)
+void cmd_write()
 {
-    FILE *fp;
-    int i;
-    if ((fp = fopen(filename, "w")) == NULL)
+    char buf[MAXLEN] = {};
+    for (int i = 0; i < profile_data_nitems; i++)
     {
-        sprintf(send_buffer, "ERROR %d:openfile error!!!---cmd_write()\n", NOFILEOPEN);
-        return;
+        sprintf(buf,"%d,%s,%04d-%02d-%02d,%s,%s\n", profile_data_store[i].id, profile_data_store[i].name, profile_data_store[i].found.y, profile_data_store[i].found.m, profile_data_store[i].found.d, profile_data_store[i].add, profile_data_store[i].others);
+        send_to_client(buf);
     }
-    for (i = 0; i < profile_data_nitems; i++)
-    {
-        fprintf(fp, "%d,", profile_data_store[i].id);
-        fprintf(fp, "%s,", profile_data_store[i].name);
-        fprintf(fp, "%04d-%02d-%02d,", profile_data_store[i].found.y, profile_data_store[i].found.m, profile_data_store[i].found.d);
-        fprintf(fp, "%s,", profile_data_store[i].add);
-        fprintf(fp, "%s", profile_data_store[i].others);
-        fprintf(fp, "\n");
-    }
-    fclose(fp);
-    sprintf(send_buffer, "wrote %s\n", filename);
+    send_to_client("END");
     return;
 }
 
@@ -299,7 +288,7 @@ void send_to_client(char *send_buffer){
     strcpy(tmp, send_buffer);
     
     sn2 = send(new_sockfd, tmp, sizeof(tmp), 0);
-    printf("\n\n:::send:::\n%s\n\n", send_buffer);
+    //printf("\n\n:::send:::\n%s\n\n", send_buffer);
     if (sn2 == -1)
     {
         printf("sn2 = %d, errno=%d: %s\n", sn2, errno, strerror(errno));

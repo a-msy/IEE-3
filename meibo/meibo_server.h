@@ -84,7 +84,7 @@ void exec_command(char *cmd, char *param);
 void cmd_quit();
 void cmd_check();
 void cmd_print(struct profile *pro, int param);
-void cmd_write(char *filename);
+void cmd_write();
 void cmd_help();
 int find_kai(char *s, char *cp);
 

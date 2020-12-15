@@ -59,7 +59,7 @@ int main(void)
             }
             else
             {
-                printf("\n\n:::receive:::\n%s\n\n", tmp);
+                //printf("\n\n:::receive:::\n%s\n\n", tmp);
                 parse_line(tmp);
             }
         }

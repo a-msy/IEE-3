@@ -69,6 +69,7 @@ struct profile
 void request(char *s_buf);
 void request_p(char *s_buf, int count);
 void request_r(char *filename);
+void request_w(char *filename);
 
 /*subst*/
 int subst(char *str, char c1, char c2);

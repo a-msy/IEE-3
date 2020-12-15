@@ -95,7 +95,8 @@ void error_split(int check)
     return;
 }
 
-void request(char *s_buf){
+void request(char *s_buf)
+{
     char r_buf[MAXLEN] = {};
 
     // get host
@@ -104,7 +105,7 @@ void request(char *s_buf){
     if (host == NULL)
     {
         printf("hostError\n");
-        return -1;
+        return exit(1);
     }
 
     // socket
@@ -112,7 +113,7 @@ void request(char *s_buf){
     if (soc == -1)
     {
         printf("soc = %d, errno=%d: %s", soc, errno, strerror(errno));
-        return -1;
+        return exit(1);
     }
 
     //connect
@@ -126,7 +127,7 @@ void request(char *s_buf){
     if (con == -1)
     {
         printf("con = %d, errno=%d: %s", con, errno, strerror(errno));
-        return -1;
+        return exit(1);
     }
 
     // send request
@@ -137,7 +138,7 @@ void request(char *s_buf){
     if (sd == -1)
     {
         printf("sd = %d, errno=%d: %s", sd, errno, strerror(errno));
-        return -1;
+        return exit(1);
     }
 
     // receive message
@@ -149,7 +150,7 @@ void request(char *s_buf){
     if (rec == -1)
     {
         printf("rec = %d, errno=%d: %s", rec, errno, strerror(errno));
-        return -1;
+        return exit(1);
     }
     printf("%s", tmp2);
     close(soc);
@@ -159,6 +160,7 @@ void request_p(char *s_buf, int count)
 {
     char r_buf[MAXLEN] = {};
     char send_text[MAXLEN] = {};
+    int rec;
 
     // get host
     struct hostent *host;
@@ -166,7 +168,7 @@ void request_p(char *s_buf, int count)
     if (host == NULL)
     {
         printf("hostError\n");
-        return -1;
+        return exit(1);
     }
 
     // socket
@@ -174,7 +176,7 @@ void request_p(char *s_buf, int count)
     if (soc == -1)
     {
         printf("soc = %d, errno=%d: %s", soc, errno, strerror(errno));
-        return -1;
+        return exit(1);
     }
 
     //connect
@@ -188,7 +190,7 @@ void request_p(char *s_buf, int count)
     if (con == -1)
     {
         printf("con = %d, errno=%d: %s", con, errno, strerror(errno));
-        return -1;
+        return exit(1);
     }
 
     // send request
@@ -197,25 +199,24 @@ void request_p(char *s_buf, int count)
     if (sd == -1)
     {
         printf("sd = %d, errno=%d: %s", sd, errno, strerror(errno));
-        return -1;
+        return exit(1);
     }
 
-    for (int i = 0; i < count; count++){
+    for (int i = 0; i < count; i++)
+    {
         // receive message
-        int rec = recv(soc, r_buf, sizeof(r_buf), 0);
-
+        rec = recv(soc, r_buf, sizeof(r_buf), 0);
         if (rec == -1)
         {
             printf("rec = %d, errno=%d: %s", rec, errno, strerror(errno));
-            return -1;
+            return exit(1);
         }
-        char tmp[MAXLEN] = "\0";
-        strcpy(tmp, r_buf);
-        printf("%s\n", tmp);
+        printf("%s", r_buf);
     }
     close(soc);
 }
-void request_r(char *filename) {
+void request_r(char *filename)
+{
     char line[LIMIT + 1];
     char r_buf[MAXLEN] = {};
     FILE *fp;
@@ -234,7 +235,7 @@ void request_r(char *filename) {
         if (host == NULL)
         {
             printf("hostError\n");
-            return -1;
+            return exit(1);
         }
 
         // socket
@@ -242,7 +243,7 @@ void request_r(char *filename) {
         if (soc == -1)
         {
             printf("soc = %d, errno=%d: %s", soc, errno, strerror(errno));
-            return -1;
+            return exit(1);
         }
 
         //connect
@@ -256,7 +257,7 @@ void request_r(char *filename) {
         if (con == -1)
         {
             printf("con = %d, errno=%d: %s", con, errno, strerror(errno));
-            return -1;
+            return exit(1);
         }
         // send request
         char tmp[MAXLEN] = "\0";
@@ -266,11 +267,89 @@ void request_r(char *filename) {
         if (sd == -1)
         {
             printf("sd = %d, errno=%d: %s", sd, errno, strerror(errno));
-            return -1;
+            return exit(1);
         }
         close(soc);
     }
     fclose(fp);
+    return;
+}
+
+void request_w(char *filename)
+{
+    FILE *fp;
+    int i, rec;
+    char send_text[MAXLEN] = {};
+    char r_buf[MAXLEN] = {};
+
+    if ((fp = fopen(filename, "w")) == NULL)
+    {
+        printf("ERROR %d:openfile error!!!---cmd_write()\n", NOFILEOPEN);
+        return exit(1);
+    }
+    //
+    // get host
+    struct hostent *host;
+    host = gethostbyname("localhost");
+    if (host == NULL)
+    {
+        printf("hostError\n");
+        return exit(1);
+    }
+
+    // socket
+    int soc = socket(AF_INET, SOCK_STREAM, 0);
+    if (soc == -1)
+    {
+        printf("soc = %d, errno=%d: %s", soc, errno, strerror(errno));
+        return exit(1);
+    }
+
+    //connect
+    struct sockaddr_in sa;
+    sa.sin_family = host->h_addrtype; //host address type
+    sa.sin_port = htons(PORT_NO);     // port number
+    bzero((char *)&sa.sin_addr, sizeof(sa.sin_addr));
+    memcpy((char *)&sa.sin_addr, (char *)host->h_addr, host->h_length);
+
+    int con = connect(soc, (struct sockaddr *)&sa, sizeof(sa));
+    if (con == -1)
+    {
+        printf("con = %d, errno=%d: %s", con, errno, strerror(errno));
+        return exit(1);
+    }
+
+    // send request
+    sprintf(send_text, "%%W");
+    int sd = send(soc, send_text, strlen(send_text), 0);
+    if (sd == -1)
+    {
+        printf("sd = %d, errno=%d: %s", sd, errno, strerror(errno));
+        return exit(1);
+    }
+    while (1)
+    {
+        rec = recv(soc, r_buf, sizeof(r_buf), 0);
+        if (rec == -1)
+        {
+            printf("rec = %d, errno=%d: %s", rec, errno, strerror(errno));
+            return exit(1);
+        }
+        if (strcmp(r_buf, "END") == 0)
+        {
+            break;
+        }
+        else
+        {
+            char tmp[MAXLEN] = "\0";
+            strcpy(tmp, r_buf);
+            fprintf(fp, "%s", tmp);
+        }
+    }
+
+    //
+    fclose(fp);
+    printf("wrote %s\n", filename);
     return;
 }
 
@@ -299,6 +378,7 @@ void exec_command(char *cmd, char *param)
     }
     else if (strcmp(cmd, "%P") == 0 || strcmp(cmd, "%p") == 0)
     {
+        if(atoi(param) < 0) strcpy(param, "0");
         request_p(cmd, atoi(param));
     }
     else if (strcmp(cmd, "%R") == 0 || strcmp(cmd, "%r") == 0)
@@ -307,7 +387,7 @@ void exec_command(char *cmd, char *param)
     }
     else if (strcmp(cmd, "%W") == 0 || strcmp(cmd, "%w") == 0)
     {
-        request(cmd);
+        request_w(param);
     }
     else if (strcmp(cmd, "%H") == 0 || strcmp(cmd, "%h") == 0)
     {
