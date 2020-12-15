@@ -66,7 +66,7 @@ struct profile
     char *others; //備考
 };
 
-char send_buffer[MAXLEN];
+int sn2, new_sockfd; //send sock
 
 /*subst*/
 int subst(char *str, char c1, char c2);
@@ -86,19 +86,14 @@ void cmd_check();
 void cmd_print(struct profile *pro, int param);
 void cmd_pex(int param);
 void cmd_read(char *filename);
+void cmd_read_server(char *filename);
 void cmd_write(char *filename);
-void cmd_binread(char *filename);
-void cmd_binwrite(char *filename);
-void cmd_find(char *keyword);
-void cmd_findb(char *keyword);
 void swap_struct(struct profile *i, struct profile *j);
 int compare_profile(struct profile *p1, struct profile *p2, int column);
 int compare_date(struct date *d1, struct date *d2);
-void cmd_sort(int youso);
-void cmd_qsort(int youso);
 int partition(int left, int right, int youso);
 void quick_sort(int left, int right, int youso);
-void cmd_delete(int param);
 void cmd_help();
-void cmd_size();
 int find_kai(char *s, char *cp);
+
+void send_to_client(char *send_buffer);

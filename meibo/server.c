@@ -1,9 +1,9 @@
-#include "meibo.h"
+#include "meibo_server.h"
 
 /*MAIN*/
 int main(void)
 {
-    int sockfd, new_sockfd, writer_len, rc, sn, sn2;
+    int sockfd, writer_len, rc, sn;
     struct sockaddr_in sa;
     struct sockaddr_in writer_addr;
     char receive_buffer[MAXLEN] = {};
@@ -57,20 +57,10 @@ int main(void)
             else
             {
                 printf("\n\n:::receive:::\n%s\n\n", receive_buffer);
-
                 parse_line(receive_buffer);
-
-                //send
-                sn2 = send(new_sockfd, send_buffer, sizeof(send_buffer), 0);
-                printf("\n\n:::send:::\n%s\n\n", send_buffer);
-                if (sn2 == -1)
-                {
-                    printf("sn2 = %d, errno=%d: %s\n", rc, errno, strerror(errno));
-                }
             }
+            receive_buffer[0] = '\0';
         }
-        receive_buffer[0] = '\0';
-        send_buffer[0] = '\0';
     }
     close(sockfd);
     return 0;
