@@ -124,18 +124,22 @@ void exec_command(char *cmd, char *param)
 {
     if (strcmp(cmd, "%C") == 0 || strcmp(cmd, "%c") == 0)
     {
+        printf("%%C\n");
         cmd_check();
     }
     else if (strcmp(cmd, "%P") == 0 || strcmp(cmd, "%p") == 0)
     {
+        printf("%%P\n");
         cmd_print(&profile_data_store[0], atoi(param));
     }
     else if (strcmp(cmd, "%H") == 0 || strcmp(cmd, "%h") == 0)
     {
+        printf("%%H\n");
         cmd_help();
     }
     else if (strcmp(cmd, "%W") == 0 || strcmp(cmd, "%w") == 0)
     {
+        printf("%%W\n");
         cmd_write();
     }
     else
@@ -288,7 +292,7 @@ void send_to_client(char *send_buffer){
     strcpy(tmp, send_buffer);
     
     sn2 = send(new_sockfd, tmp, sizeof(tmp), 0);
-    printf("\n\n:::send:::\n%s\n\n", send_buffer);
+    //printf("\n\n:::send:::\n%s\n\n", send_buffer);
     if (sn2 == -1)
     {
         printf("sn2 = %d, errno=%d: %s\n", sn2, errno, strerror(errno));
