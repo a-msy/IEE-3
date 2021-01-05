@@ -95,7 +95,7 @@ void request(char *s_buf)
     if (host == NULL)
     {
         printf("hostError\n");
-        return exit(1);
+        return ;
     }
 
     // socket
@@ -103,7 +103,7 @@ void request(char *s_buf)
     if (soc == -1)
     {
         printf("soc = %d, errno=%d: %s", soc, errno, strerror(errno));
-        return exit(1);
+        return ;
     }
 
     //connect
@@ -117,7 +117,7 @@ void request(char *s_buf)
     if (con == -1)
     {
         printf("con = %d, errno=%d: %s", con, errno, strerror(errno));
-        return exit(1);
+        return ;
     }
 
     // send request
@@ -128,7 +128,7 @@ void request(char *s_buf)
     if (sd == -1)
     {
         printf("sd = %d, errno=%d: %s", sd, errno, strerror(errno));
-        return exit(1);
+        return ;
     }
 
     // receive message
@@ -140,7 +140,7 @@ void request(char *s_buf)
     if (rec == -1)
     {
         printf("rec = %d, errno=%d: %s", rec, errno, strerror(errno));
-        return exit(1);
+        return ;
     }
     printf("%s", tmp2);
     close(soc);
@@ -158,7 +158,7 @@ void request_p(char *s_buf, int count)
     if (host == NULL)
     {
         printf("hostError\n");
-        return exit(1);
+        return ;
     }
 
     // socket
@@ -166,7 +166,7 @@ void request_p(char *s_buf, int count)
     if (soc == -1)
     {
         printf("soc = %d, errno=%d: %s", soc, errno, strerror(errno));
-        return exit(1);
+        return ;
     }
 
     //connect
@@ -180,7 +180,7 @@ void request_p(char *s_buf, int count)
     if (con == -1)
     {
         printf("con = %d, errno=%d: %s", con, errno, strerror(errno));
-        return exit(1);
+        return ;
     }
 
     // send request
@@ -189,8 +189,18 @@ void request_p(char *s_buf, int count)
     if (sd == -1)
     {
         printf("sd = %d, errno=%d: %s", sd, errno, strerror(errno));
-        return exit(1);
+        return ;
     }
+
+    // receive message
+    rec = recv(soc, r_buf, sizeof(r_buf), 0);
+    if (rec == -1)
+    {
+        printf("rec = %d, errno=%d: %s", rec, errno, strerror(errno));
+        return ;
+    }
+    count = atoi(r_buf);
+    printf("print %d profile(s)\n", count);
 
     for (int i = 0; i < count; i++)
     {
@@ -199,7 +209,7 @@ void request_p(char *s_buf, int count)
         if (rec == -1)
         {
             printf("rec = %d, errno=%d: %s", rec, errno, strerror(errno));
-            return exit(1);
+            return ;
         }
         printf("%s", r_buf);
     }
@@ -225,7 +235,7 @@ void request_r(char *filename)
         if (host == NULL)
         {
             printf("hostError\n");
-            return exit(1);
+            return ;
         }
 
         // socket
@@ -233,7 +243,7 @@ void request_r(char *filename)
         if (soc == -1)
         {
             printf("soc = %d, errno=%d: %s", soc, errno, strerror(errno));
-            return exit(1);
+            return ;
         }
 
         //connect
@@ -247,7 +257,7 @@ void request_r(char *filename)
         if (con == -1)
         {
             printf("con = %d, errno=%d: %s", con, errno, strerror(errno));
-            return exit(1);
+            return ;
         }
         // send request
         char tmp[MAXLEN] = "\0";
@@ -257,7 +267,7 @@ void request_r(char *filename)
         if (sd == -1)
         {
             printf("sd = %d, errno=%d: %s", sd, errno, strerror(errno));
-            return exit(1);
+            return ;
         }
         close(soc);
     }
@@ -275,7 +285,7 @@ void request_w(char *filename)
     if ((fp = fopen(filename, "w")) == NULL)
     {
         printf("ERROR %d:openfile error!!!---cmd_write()\n", NOFILEOPEN);
-        return exit(1);
+        return ;
     }
     //
     // get host
@@ -284,7 +294,7 @@ void request_w(char *filename)
     if (host == NULL)
     {
         printf("hostError\n");
-        return exit(1);
+        return ;
     }
 
     // socket
@@ -292,7 +302,7 @@ void request_w(char *filename)
     if (soc == -1)
     {
         printf("soc = %d, errno=%d: %s", soc, errno, strerror(errno));
-        return exit(1);
+        return ;
     }
 
     //connect
@@ -306,7 +316,7 @@ void request_w(char *filename)
     if (con == -1)
     {
         printf("con = %d, errno=%d: %s", con, errno, strerror(errno));
-        return exit(1);
+        return ;
     }
 
     // send request
@@ -315,7 +325,7 @@ void request_w(char *filename)
     if (sd == -1)
     {
         printf("sd = %d, errno=%d: %s", sd, errno, strerror(errno));
-        return exit(1);
+        return ;
     }
     while (1)
     {
@@ -323,7 +333,7 @@ void request_w(char *filename)
         if (rec == -1)
         {
             printf("rec = %d, errno=%d: %s", rec, errno, strerror(errno));
-            return exit(1);
+            return ;
         }
         if (strcmp(r_buf, "END") == 0)
         {
@@ -370,8 +380,7 @@ void exec_command(char *cmd, char *param)
     }
     else if (strcmp(cmd, "%P") == 0 || strcmp(cmd, "%p") == 0)
     {
-        if(atoi(param) < 0) strcpy(param, "0");
-        request_p(cmd, atoi(param));
+        request_p(cmd, strtol(param, 0, 10));
     }
     else if (strcmp(cmd, "%R") == 0 || strcmp(cmd, "%r") == 0)
     {

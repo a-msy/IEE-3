@@ -112,6 +112,7 @@ void parse_line(char *line)
     if (line[0] == '%')
     {
         com = split(line, ret, ' ', 2);
+        printf("%s %s\n", ret[0], ret[1]);
         exec_command(ret[0], ret[1]);
     }
     else
@@ -124,22 +125,18 @@ void exec_command(char *cmd, char *param)
 {
     if (strcmp(cmd, "%C") == 0 || strcmp(cmd, "%c") == 0)
     {
-        printf("%%C\n");
         cmd_check();
     }
     else if (strcmp(cmd, "%P") == 0 || strcmp(cmd, "%p") == 0)
     {
-        printf("%%P\n");
-        cmd_print(&profile_data_store[0], atoi(param));
+        cmd_print(&profile_data_store[0], strtol(param, 0, 10));
     }
     else if (strcmp(cmd, "%H") == 0 || strcmp(cmd, "%h") == 0)
     {
-        printf("%%H\n");
         cmd_help();
     }
     else if (strcmp(cmd, "%W") == 0 || strcmp(cmd, "%w") == 0)
     {
-        printf("%%W\n");
         cmd_write();
     }
     else
@@ -166,16 +163,18 @@ void cmd_check()
 void cmd_print(struct profile *pro, int param)
 {
     int i;
+    printf("param:%d\n", param);
 
     if (profile_data_nitems == 0)
     {
-        sprintf(send_buffer, "ERROR %d:No record. No print.--cmd_print()\n", NORECORD);
-        send_to_client(send_buffer);
+        send_to_client("0");
         return;
     }
 
     if (param == 0)
     { //０のとき
+        sprintf(send_buffer, "%d", profile_data_nitems);
+        send_to_client(send_buffer);
         for (i = 0; i < profile_data_nitems; i++)
         {
             printdata(pro + i, i);
@@ -187,37 +186,37 @@ void cmd_print(struct profile *pro, int param)
 
         if (param > profile_data_nitems)
         {
-            sprintf(send_buffer, "ERROR %d:over number of record.--cmd_print()\nERROR %d:number of item is %d\n", OVERNUMBERRECORD, NUMITEM, profile_data_nitems);
-            send_to_client(send_buffer);
+            send_to_client("0");
             return;
-        }
-
-        for (i = 0; i < param; i++)
-        {
-            printdata(pro + i, i);
+        }else{
+            sprintf(send_buffer, "%d", param);
+            send_to_client(send_buffer);
+            for (i = 0; i < param; i++){
+                printdata(pro + i, i);
+            }
         }
     }
 
     else if (param < 0)
     { //負の時
-
         param *= -1;
         if (param > profile_data_nitems)
         {
-            sprintf(send_buffer, "ERROR %d:over number of record.--cmd_print()\nERROR %d:number of item is %d\n", OVERNUMBERRECORD, NUMITEM, profile_data_nitems);
-            send_to_client(send_buffer);
+            send_to_client("0");
             return;
+        }else{
+            pro += profile_data_nitems - param;
+            sprintf(send_buffer, "%d", param);
+            send_to_client(send_buffer);
+            for (i = 0; i < param; i++)
+            {
+                printdata(pro + i, profile_data_nitems - param + i);
+            }
         }
 
-        pro += profile_data_nitems - param;
-
-        for (i = 0; i < param; i++)
-        {
-            printdata(pro + i, profile_data_nitems - param + i);
-        }
+        
     }else{
-        sprintf(send_buffer, "ERROR : No Param\n");
-        send_to_client(send_buffer);
+        send_to_client("0");
         return;
     }
     return;
