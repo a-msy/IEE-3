@@ -1,63 +1,101 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <netdb.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <errno.h>
+
+#define PORT_NO 10090
 #define DIGITS 4 //4 numbers hit and blow
 #define COR 7 // Count of responses
-
-char answer[DIGITS] = {};
+#define MAXLEN 4096
 
 int main(void){
-    int i, j, hit, blow;
     int count = 0;
-    srand((unsigned int)time(NULL));
+    char r_buf[MAXLEN] = {};
 
-    // 0から9までの乱数を発生
-    for (i = 0; i < DIGITS; i++)
+    // get host
+    struct hostent *host;
+    host = gethostbyname("localhost");
+    if (host == NULL)
     {
-        answer[i] = (rand() % 10) + '0';
-        // 同じ数字が出ていたら排除
-        for (j = 0; j < i; j++){
-            if(answer[i] == answer[j]){
-                answer[i] = (rand() % 10) + '0';
-            }
-        }
+        printf("hostError\n");
+        return 0;
     }
-
-    while (count < COR)
+    printf("Input s to start hit and blow.\n input e to end this program.\n");
+    while (1)
     {
-        i = 0;
-        hit = 0;
-        blow = 0;
+        // socket
+        int soc = socket(AF_INET, SOCK_STREAM, 0);
+        if (soc == -1)
+        {
+            printf("soc = %d, errno=%d: %s", soc, errno, strerror(errno));
+            close(soc);
+            break;
+        }
+
+        //connect
+        struct sockaddr_in sa;
+        sa.sin_family = host->h_addrtype; //host address type
+        sa.sin_port = htons(PORT_NO);     // port number
+        bzero((char *)&sa.sin_addr, sizeof(sa.sin_addr));
+        memcpy((char *)&sa.sin_addr, (char *)host->h_addr, host->h_length);
+
+        int con = connect(soc, (struct sockaddr *)&sa, sizeof(sa));
+        if (con == -1)
+        {
+            printf("con = %d, errno=%d: %s", con, errno, strerror(errno));
+            close(soc);
+            break;
+        }
+
         char input[DIGITS] = {};
-        int c;
-        printf("Please Input Number of %d Degits => ", DIGITS);
         scanf("%4s", &input);
-
-        for (i = 0; i < DIGITS; i++)
+        if(strcmp(input,"e") == 0){
+            printf("bye.\n");
+            close(soc);
+            break;
+        }
+        else
         {
-            for (j = 0; j < DIGITS; j++)
+            int sd = send(soc, input, sizeof(input), 0);
+            if (sd == -1)
             {
-                if (answer[i] == input[j])
-                {
-                    if (i == j)
-                    {
-                        hit++;
-                    }
-                    else
-                    {
-                        blow++;
-                    }
-                }
+                printf("sd = %d, errno=%d: %s", sd, errno, strerror(errno));
+                close(soc);
+                break;
             }
         }
-        if (hit == DIGITS)
+
+        // receive message
+        char tmp2[MAXLEN] = "\0";
+        int rec = recv(soc, tmp2, sizeof(tmp2), 0);
+
+        if (rec == -1)
         {
-            printf("GG.\n");
+            printf("rec = %d, errno=%d: %s", rec, errno, strerror(errno));
+            close(soc);
+            break;
         }
-        printf("%s is %d Hit, %d Blow.\n\n", input, hit, blow);
-        count++;
+
+        if(strcmp(tmp2,"i") == 0){
+            count++;
+            printf("Please Input Number of %d Degits => ", DIGITS);
+        }
+        else if(strcmp(tmp2,"g") == 0){
+            printf("Answer is %s\n %d tried.\n",input,count);
+            close(soc);
+            break;
+        }
+        else
+        {
+            count++;
+            printf("%s\n", tmp2);
+            printf("Please Input Number of %d Degits => ", DIGITS);
+        }
     }
-    printf("ANSWER IS %s\n", answer);
     return 0;
 }
