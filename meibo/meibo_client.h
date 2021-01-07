@@ -18,22 +18,18 @@
 
 typedef enum
 {
-    null,
-    LUCK,
-    OVER,
-    NOTDEFINED,
-    NORECORD,
+    null,LUCK,OVER,
+    NOTDEFINED,NORECORD,
     OVERNUMBERRECORD,
-    FORMATINPUT,
-    FORMATID,
-    FORMATDATE,
-    NUMITEM,
-    ERRORNUM,
-    NOFILEOPEN,
-    OVERNITEMS,
-    PARAMERROR,
+    FORMATINPUT,FORMATID,
+    FORMATDATE,NUMITEM,
+    ERRORNUM,NOFILEOPEN,
+    OVERNITEMS,PARAMERROR,
 } ERROR;
 
+struct hostent *host;
+struct sockaddr_in sa;
+int soc, con, sd, rec;
 void request(char *s_buf);
 void request_p(char *s_buf, int count);
 void request_r(char *filename);
@@ -50,3 +46,4 @@ int get_line_fp(FILE *fp, char *input);
 
 void parse_line(char *line);
 void exec_command(char *cmd, char *param);
+void soc_con();

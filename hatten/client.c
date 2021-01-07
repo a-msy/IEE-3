@@ -15,6 +15,7 @@
 
 int main(void){
     int count = 0;
+    int start = 0;
     char r_buf[MAXLEN] = {};
 
     // get host
@@ -25,7 +26,7 @@ int main(void){
         printf("hostError\n");
         return 0;
     }
-    printf("Input s to start hit and blow.\n input e to end this program.\n");
+    printf("Input s to start hit and blow.\nInput e to end this program.\n");
     while (1)
     {
         // socket
@@ -54,10 +55,18 @@ int main(void){
 
         char input[DIGITS] = {};
         scanf("%4s", &input);
+
         if(strcmp(input,"e") == 0){
             printf("bye.\n");
+            exit(1);
+        }
+
+        if (strcmp(input, "s") == 0 && start == 1)
+        {
+            printf("Game is already stared.\n");
+            printf("Please Input Number of %d Degits => ", DIGITS);
             close(soc);
-            break;
+            continue;
         }
         else
         {
@@ -68,33 +77,34 @@ int main(void){
                 close(soc);
                 break;
             }
-        }
 
-        // receive message
-        char tmp2[MAXLEN] = "\0";
-        int rec = recv(soc, tmp2, sizeof(tmp2), 0);
+            // receive message
+            char tmp2[MAXLEN] = "\0";
+            int rec = recv(soc, tmp2, sizeof(tmp2), 0);
 
-        if (rec == -1)
-        {
-            printf("rec = %d, errno=%d: %s", rec, errno, strerror(errno));
-            close(soc);
-            break;
-        }
+            if (rec == -1)
+            {
+                printf("rec = %d, errno=%d: %s", rec, errno, strerror(errno));
+                close(soc);
+                break;
+            }
 
-        if(strcmp(tmp2,"i") == 0){
-            count++;
-            printf("Please Input Number of %d Degits => ", DIGITS);
-        }
-        else if(strcmp(tmp2,"g") == 0){
-            printf("Answer is %s\n %d tried.\n",input,count);
-            close(soc);
-            break;
-        }
-        else
-        {
-            count++;
-            printf("%s\n", tmp2);
-            printf("Please Input Number of %d Degits => ", DIGITS);
+            if(strcmp(tmp2,"i") == 0){
+                start = 1;
+                count++;
+                printf("Please Input Number of %d Degits => ", DIGITS);
+            }
+            else if(strcmp(tmp2,"g") == 0){
+                printf("Answer is %s\n %d tried.\n",input,count);
+                close(soc);
+                break;
+            }
+            else
+            {
+                count++;
+                printf("%s\n", tmp2);
+                printf("Please Input Number of %d Degits => ", DIGITS);
+            }
         }
     }
     return 0;

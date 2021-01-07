@@ -1,11 +1,3 @@
-/*
- File: meibo_server.c
- Author: 09430509
-
- Created on 2019/04/10
- update on 2019/07/26
-*/
-
 #include "meibo_server.h"
 
 /*profile*/
@@ -213,8 +205,6 @@ void cmd_print(struct profile *pro, int param)
                 printdata(pro + i, profile_data_nitems - param + i);
             }
         }
-
-        
     }else{
         send_to_client("0");
         return;

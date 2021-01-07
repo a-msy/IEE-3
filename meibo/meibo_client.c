@@ -88,43 +88,13 @@ void error_split(int check)
 void request(char *s_buf)
 {
     char r_buf[MAXLEN] = {};
-
-    // get host
-    struct hostent *host;
-    host = gethostbyname("localhost");
-    if (host == NULL)
-    {
-        printf("hostError\n");
-        return ;
-    }
-
-    // socket
-    int soc = socket(AF_INET, SOCK_STREAM, 0);
-    if (soc == -1)
-    {
-        printf("soc = %d, errno=%d: %s", soc, errno, strerror(errno));
-        return ;
-    }
-
-    //connect
-    struct sockaddr_in sa;
-    sa.sin_family = host->h_addrtype; //host address type
-    sa.sin_port = htons(PORT_NO);     // port number
-    bzero((char *)&sa.sin_addr, sizeof(sa.sin_addr));
-    memcpy((char *)&sa.sin_addr, (char *)host->h_addr, host->h_length);
-
-    int con = connect(soc, (struct sockaddr *)&sa, sizeof(sa));
-    if (con == -1)
-    {
-        printf("con = %d, errno=%d: %s", con, errno, strerror(errno));
-        return ;
-    }
+    soc_con();
 
     // send request
     char tmp[MAXLEN] = "\0";
     strcpy(tmp, s_buf);
 
-    int sd = send(soc, tmp, sizeof(tmp), 0);
+    sd = send(soc, tmp, sizeof(tmp), 0);
     if (sd == -1)
     {
         printf("sd = %d, errno=%d: %s", sd, errno, strerror(errno));
@@ -150,42 +120,12 @@ void request_p(char *s_buf, int count)
 {
     char r_buf[MAXLEN] = {};
     char send_text[MAXLEN] = {};
-    int rec;
 
-    // get host
-    struct hostent *host;
-    host = gethostbyname("localhost");
-    if (host == NULL)
-    {
-        printf("hostError\n");
-        return ;
-    }
-
-    // socket
-    int soc = socket(AF_INET, SOCK_STREAM, 0);
-    if (soc == -1)
-    {
-        printf("soc = %d, errno=%d: %s", soc, errno, strerror(errno));
-        return ;
-    }
-
-    //connect
-    struct sockaddr_in sa;
-    sa.sin_family = host->h_addrtype; //host address type
-    sa.sin_port = htons(PORT_NO);     // port number
-    bzero((char *)&sa.sin_addr, sizeof(sa.sin_addr));
-    memcpy((char *)&sa.sin_addr, (char *)host->h_addr, host->h_length);
-
-    int con = connect(soc, (struct sockaddr *)&sa, sizeof(sa));
-    if (con == -1)
-    {
-        printf("con = %d, errno=%d: %s", con, errno, strerror(errno));
-        return ;
-    }
+    soc_con();
 
     // send request
     sprintf(send_text, "%s %d", s_buf, count);
-    int sd = send(soc, send_text, strlen(send_text), 0);
+    sd = send(soc, send_text, strlen(send_text), 0);
     if (sd == -1)
     {
         printf("sd = %d, errno=%d: %s", sd, errno, strerror(errno));
@@ -229,41 +169,12 @@ void request_r(char *filename)
 
     while (get_line_fp(fp, line))
     {
-        // get host
-        struct hostent *host;
-        host = gethostbyname("localhost");
-        if (host == NULL)
-        {
-            printf("hostError\n");
-            return ;
-        }
-
-        // socket
-        int soc = socket(AF_INET, SOCK_STREAM, 0);
-        if (soc == -1)
-        {
-            printf("soc = %d, errno=%d: %s", soc, errno, strerror(errno));
-            return ;
-        }
-
-        //connect
-        struct sockaddr_in sa;
-        sa.sin_family = host->h_addrtype; //host address type
-        sa.sin_port = htons(PORT_NO);     // port number
-        bzero((char *)&sa.sin_addr, sizeof(sa.sin_addr));
-        memcpy((char *)&sa.sin_addr, (char *)host->h_addr, host->h_length);
-
-        int con = connect(soc, (struct sockaddr *)&sa, sizeof(sa));
-        if (con == -1)
-        {
-            printf("con = %d, errno=%d: %s", con, errno, strerror(errno));
-            return ;
-        }
+        soc_con();
         // send request
         char tmp[MAXLEN] = "\0";
         strcpy(tmp, line);
 
-        int sd = send(soc, tmp, sizeof(tmp), 0);
+        sd = send(soc, tmp, sizeof(tmp), 0);
         if (sd == -1)
         {
             printf("sd = %d, errno=%d: %s", sd, errno, strerror(errno));
@@ -287,41 +198,12 @@ void request_w(char *filename)
         printf("ERROR %d:openfile error!!!---cmd_write()\n", NOFILEOPEN);
         return ;
     }
-    //
-    // get host
-    struct hostent *host;
-    host = gethostbyname("localhost");
-    if (host == NULL)
-    {
-        printf("hostError\n");
-        return ;
-    }
 
-    // socket
-    int soc = socket(AF_INET, SOCK_STREAM, 0);
-    if (soc == -1)
-    {
-        printf("soc = %d, errno=%d: %s", soc, errno, strerror(errno));
-        return ;
-    }
-
-    //connect
-    struct sockaddr_in sa;
-    sa.sin_family = host->h_addrtype; //host address type
-    sa.sin_port = htons(PORT_NO);     // port number
-    bzero((char *)&sa.sin_addr, sizeof(sa.sin_addr));
-    memcpy((char *)&sa.sin_addr, (char *)host->h_addr, host->h_length);
-
-    int con = connect(soc, (struct sockaddr *)&sa, sizeof(sa));
-    if (con == -1)
-    {
-        printf("con = %d, errno=%d: %s", con, errno, strerror(errno));
-        return ;
-    }
+    soc_con();
 
     // send request
     sprintf(send_text, "%%W");
-    int sd = send(soc, send_text, strlen(send_text), 0);
+    sd = send(soc, send_text, strlen(send_text), 0);
     if (sd == -1)
     {
         printf("sd = %d, errno=%d: %s", sd, errno, strerror(errno));
@@ -397,5 +279,30 @@ void exec_command(char *cmd, char *param)
     else
     {
         printf("ERROR %d:%s command is not defined.--exec_command()\n", NOTDEFINED, cmd);
+    }
+}
+
+void soc_con(){
+    // socket
+    soc = socket(AF_INET, SOCK_STREAM, 0);
+    if (soc == -1)
+    {
+        printf("soc = %d, errno=%d: %s", soc, errno, strerror(errno));
+        close(soc);
+        exit(1);
+    }
+
+    //connect
+    sa.sin_family = host->h_addrtype; //host address type
+    sa.sin_port = htons(PORT_NO);     // port number
+    bzero((char *)&sa.sin_addr, sizeof(sa.sin_addr));
+    memcpy((char *)&sa.sin_addr, (char *)host->h_addr, host->h_length);
+
+    con = connect(soc, (struct sockaddr *)&sa, sizeof(sa));
+    if (con == -1)
+    {
+        printf("con = %d, errno=%d: %s", con, errno, strerror(errno));
+        close(soc);
+        exit(1);
     }
 }
